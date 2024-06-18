@@ -1,0 +1,13 @@
+port: 6007
+# 加载的模型
+check_point: weights/latest.pth
+
+# obs网盘配置
+obs:
+  ak: PRUSZLZORW5C7EBZICRM
+  sk: Gxcv7At8SWR8cgmHcnsabeScnShc7BRXr1fHnGtZ
+  server: https://obs.cn-southwest-2.myhuaweicloud.com
+  bucket: telrobot
+  base_dir: meta-human/results
+  base_url: static.telrobot.top/
+

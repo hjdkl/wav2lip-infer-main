@@ -1,0 +1,11 @@
+*.pth
+
+*.mp4
+*.mp3
+*.wav
+*.png
+*.jpg
+*.gif
+*.avi
+
+temp/

@@ -1,0 +1,1 @@
+pip install tb-nightly==2.14.0a20230615 basicsr==1.4.2 facexlib==0.3.0 -i https://mirrors.aliyun.com/pypi/simple/
