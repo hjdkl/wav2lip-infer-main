@@ -548,7 +548,7 @@ if __name__ == "__main__":
         raise ValueError("check point does not exist.")
     model_path = check_point
     obs_config = config["obs"]
-    host = "127.0.0.7"  # get_lan_ip()
+    host = "0.0.0.0"  # get_lan_ip()
     port = config["port"]
     os.makedirs(JOB_DIR, exist_ok=True)
     os.makedirs(CACHE_DIR, exist_ok=True)

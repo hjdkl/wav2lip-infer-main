@@ -1,6 +1,6 @@
-port: 6007
+port: 6006
 # 加载的模型
-check_point: weights/latest.pth
+check_point: weights/pt35.pth
 
 # obs网盘配置
 obs:
