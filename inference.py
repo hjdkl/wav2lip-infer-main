@@ -31,7 +31,7 @@ face_det_batch_size = 16
 # 唇形转化batch_size
 wav2lip_batch_size = 8
 # 面部超分batch_size
-gfpgan_batch_size = 8
+gfpgan_batch_size = 8 
 # 面部粘贴batch_size
 parse_batch_size = 8
 
@@ -217,6 +217,8 @@ def paste_faces_to_input_image(input_img:List, restored_face:List, affine_matrix
         # cv2.waitKey(1)
         # 反仿射变换
         #！i_s = time.time()
+
+        
         inverse_affine = cv2.invertAffineTransform(affine_matrix[i])
         inv_restored = cv2.warpAffine(restored_face[i], inverse_affine, (w, h))
 
@@ -405,6 +407,11 @@ def wav_to_lip_with_chin(
     mel_chunks = get_mel_chunks(audio_path, fps, total_frame=total_frame)  ##返回所有音频的列表
 
     global det_faces, all_landmarks_5, twice_det_faces, twice_all_landmarks_5
+    det_faces=[]
+    all_landmarks_5=[]
+    twice_det_faces=[]
+    twice_all_landmarks_5=[]
+    
 
     task_logger.info('step3. 获得人脸')
     #缓存人脸存在直接获取，不存在就检测
@@ -518,14 +525,23 @@ def wav_to_lip_with_chin(
                 wav2_result.append(pred[j].astype(np.uint8))
     wav2_frame_num=len(wav2_result)
 
-    if wav2_frame_num>frame_num:
-        full_frames+=full_frames[0:wav2_frame_num-frame_num]
-        all_landmarks_5+=all_landmarks_5[0:wav2_frame_num-frame_num]
-        det_faces += det_faces[0:wav2_frame_num-frame_num]
-        face_img += face_img[0:wav2_frame_num - frame_num]
-        twice_det_faces += twice_det_faces[0:wav2_frame_num - frame_num]
-        affine_matrices+=affine_matrices[0:wav2_frame_num - frame_num]
-        frame_num=wav2_frame_num
+    while len(full_frames) < wav2_frame_num:
+        needed_frames= wav2_frame_num - len(full_frames)  
+        full_frames.extend(full_frames[:needed_frames])
+        all_landmarks_5.extend( all_landmarks_5[:needed_frames])
+        det_faces.extend(det_faces[:needed_frames])
+        face_img.extend(face_img[:needed_frames])
+        twice_det_faces.extend(twice_det_faces[:needed_frames])
+        affine_matrices.extend(affine_matrices[:needed_frames])
+    
+   # if wav2_frame_num>frame_num:
+       # full_frames+=full_frames[0:wav2_frame_num-frame_num]
+       # all_landmarks_5+=all_landmarks_5[0:wav2_frame_num-frame_num]
+        #det_faces += det_faces[0:wav2_frame_num-frame_num]
+        #face_img += face_img[0:wav2_frame_num - frame_num]
+        #twice_det_faces += twice_det_faces[0:wav2_frame_num - frame_num]
+        #affine_matrices+=affine_matrices[0:wav2_frame_num - frame_num]
+        #frame_num=wav2_frame_num
     del wav2lip
     frame_idx = 0
     # gfpgan
@@ -541,7 +557,7 @@ def wav_to_lip_with_chin(
             elif i==total - 1:
                 gfp_batch=wav2_result[i*gfpgan_batch_size:]
             for j in range(len(gfp_batch)):
-                gen_face=wav2_result[frame_idx]
+                gen_face=wav2_result[frame_idx] 
                 x1, y1, x2, y2 =  twice_det_faces[frame_idx]
                 gen_face = cv2.resize(gen_face, (x2 - x1, y2 - y1))
                 # cv2.imshow("gen_face", gen_face)
@@ -614,9 +630,9 @@ def wav_to_lip_with_chin(
 
 if __name__ == '__main__':
     a = time.time()
-    print(wav_to_lip_with_chin("test.mp3_16k.wav", "test.mp4", "pt35.pth"))
-    
-    # print(main("北影推理视频和音频/北影音频.wav", "beiying.mp4", "weight/yz.pth"))
+   # print(wav_to_lip_with_chin("test.mp3_16k.wav", "test.mp4", "pt35.pth"))
+  
+    print(wav_to_lip_with_chin("test.mp3_16k.wav", "测试.mp4", "pt35.pth"))
     b = time.time()
     print("time", b - a)
 

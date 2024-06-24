@@ -296,6 +296,8 @@ def _infer_multiple_video(task_id: str, infer_request: InferRequest) -> None:
     :return: None
     """
     global model_path
+    
+    
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
     base_dir = f"./temp/{date_str}/{task_id}"
     os.makedirs(base_dir, exist_ok=True)
@@ -311,6 +313,10 @@ def _infer_multiple_video(task_id: str, infer_request: InferRequest) -> None:
     for i in range(len(scenes)):
         task_logger.info("处理场景进度: {}/{}".format(i + 1, len(scenes)))
         scene = scenes[i]
+        if len(scene.video_nodes) ==0 and len(scene.image_nodes) ==0 and len(scene.gif_nodes )==0 :
+            if scene.model is None or scene.speaker is None:
+                continue
+
         model = scene.model
         speaker = scene.speaker
         background = scene.background
@@ -374,6 +380,7 @@ def _infer_multiple_video(task_id: str, infer_request: InferRequest) -> None:
             readers.append(inference_video_reader)
         else:
             task_logger.info('step1. 不需要推理视频')
+
 
         task_logger.info('step2. 多线程下载素材')
         nodes = scene.image_nodes + scene.audio_nodes + scene.video_nodes + scene.gif_nodes + scene.text_nodes
@@ -548,7 +555,8 @@ if __name__ == "__main__":
         raise ValueError("check point does not exist.")
     model_path = check_point
     obs_config = config["obs"]
-    host = "0.0.0.0"  # get_lan_ip()
+    #host = "0.0.0.0"  # get_lan_ip()
+    host="127.0.0.1"
     port = config["port"]
     os.makedirs(JOB_DIR, exist_ok=True)
     os.makedirs(CACHE_DIR, exist_ok=True)

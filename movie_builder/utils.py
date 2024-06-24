@@ -93,7 +93,7 @@ def get_xfade_filter_cmd(video_list: List[CombinedVideoItem]) -> (str, str, str)
     audio_complex = ''
     need_filter_len = len(video_list) - 1  # 需要添加滤镜的视频数量, 最后一个视频不需要添加滤镜
     for i in range(need_filter_len):
-        item = video_list[i]
+        item = video_list[i] 
         video_path = item.video_path
         effect = item.transition.effect
         duration = item.transition.duration  # 毫秒
@@ -192,7 +192,7 @@ def get_video_info(file_path: str) -> (float, float, float):
     audio_stream = [x for x in result.get('streams', []) if x.get('codec_type', '') == 'audio']
     audio_stream = audio_stream[0] if len(audio_stream) > 0 else None
     audio_stream_duration = audio_stream.get('duration') if audio_stream else 0.0
-    r_frame_rate = video_stream.get('r_frame_rate')
+    r_frame_rate = video_stream.get('r_frame_rate')  if video_stream is not None else '25/1'
     frame_count, ms_count = r_frame_rate.split('/')
     fps = int(frame_count) / int(ms_count)
     return float(video_stream_duration) * 1000, float(fps), float(audio_stream_duration) * 1000

@@ -1,4 +1,4 @@
-port: 6006
+port: 6001
 # 加载的模型
 check_point: weights/pt35.pth
 
