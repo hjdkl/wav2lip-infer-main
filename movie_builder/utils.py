@@ -3,6 +3,8 @@ import logging
 import os
 from typing import Any, List, Union
 from uuid import uuid4
+from moviepy.editor import *
+import subprocess
 
 import cv2
 import hashlib
@@ -66,6 +68,18 @@ def get_logger(name):
     logger = logging.getLogger(base_name)
     return logger
 
+def has_audio(video_path):  
+    try:  
+        video = VideoFileClip(video_path)  
+        return video.audio is not None  
+    except Exception as e:  
+        print(f"Error loading video: {e}")  
+        return False  
+    finally:  
+        if 'video' in locals() and isinstance(video, VideoFileClip):  
+            video.close()  
+            del video  
+  
 
 def get_xfade_filter_cmd(video_list: List[CombinedVideoItem]) -> (str, str, str):
     """获取转场滤镜的命令
@@ -91,9 +105,43 @@ def get_xfade_filter_cmd(video_list: List[CombinedVideoItem]) -> (str, str, str)
     file_list = ''
     video_complex = ''
     audio_complex = ''
-    need_filter_len = len(video_list) - 1  # 需要添加滤镜的视频数量, 最后一个视频不需要添加滤镜
+     
+     # 没有音频的视频中添加静音音频
+    audio_streams = [has_audio(item.video_path) for item in video_list]
+    for j in range(len(video_list)): 
+      if  not audio_streams[j]:  
+            video = VideoFileClip(video_list[j].video_path)
+            audio_dir = "./temp"
+            if not os.path.exists(audio_dir):  
+                os.makedirs(audio_dir)
+            video_path = video_list[j].video_path  # 获取当前视频的实际路径  
+            base_name, ext = os.path.splitext(os.path.basename(video_path))  # 获取文件名和扩展名  
+            temp_file_path = os.path.join(audio_dir, f"{base_name}_with_silent_audio{ext}")  # 构建临时文件路径
+            audio_cmd = [  
+
+            'ffmpeg',  
+
+            '-i', video_path,  # 输入视频文件路径  
+
+            '-f', 'lavfi',  
+
+            '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',  # 输入静音音频  
+
+            '-c:v', 'copy',  # 复制视频流，不重新编码  
+
+            '-c:a', 'aac',  # 使用AAC编码音频流  
+
+            '-shortest',  # 输出文件的时长与最短的输入流相匹配（即视频时长）  
+
+            temp_file_path  # 输出文件路径  
+        ]  
+            subprocess.run(audio_cmd, check=True)    
+            os.replace(temp_file_path, video_path)
+
+    
+    need_filter_len = len(video_list) - 1  # 需要添加滤镜的视频数量, 最后一个视频不需要添加滤镜)
     for i in range(need_filter_len):
-        item = video_list[i] 
+        item = video_list[i]
         video_path = item.video_path
         effect = item.transition.effect
         duration = item.transition.duration  # 毫秒
@@ -118,9 +166,11 @@ def get_xfade_filter_cmd(video_list: List[CombinedVideoItem]) -> (str, str, str)
         offset = int(video_duration + last_offset - duration)
         last_offset = offset
         video_complex += f'{v_pre}{v_index}xfade=transition={effect}:duration={duration}ms:offset={offset}ms{v_end}'
+        #if audio_streams[i]:
         audio_complex += f'{a_pre}{a_index}acrossfade=d={duration}ms{a_end}'
     file_list += f' -i {video_list[-1].video_path}'  # 最后一个视频
     return file_list, video_complex, audio_complex
+
 
 
 def split_video_audio(file_path: str, target_fps: Union[int, float] = 0, output_dir: str = CACHE_DIR) -> (str, str):
