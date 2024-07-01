@@ -38,13 +38,16 @@ def get_clip(
     :param is_mask: bool, 是否是mask
     :return: VideoFileClip, AudioFileClip
     """
-    ms, _, _ = get_video_info(file_path)
-    seconds = ms / 1000
+    #ms, _, _ = get_video_info(file_path)
+   # seconds = ms / 1000
     clip = VideoFileClip(file_path)
+    seconds=clip.duration
     clip = clip.resize((width, height))
     start_seconds = start_at / 1000
     end_seconds = end_at / 1000
     duration = end_seconds - start_seconds
+    if duration<0:
+        raise Exception("视频结束时间不能早于开始时间")
     clip = clip.rotate(angle)
     if not is_mask:
         opacity = opacity / 100 if opacity else 1
@@ -53,8 +56,10 @@ def get_clip(
     else:
         t_start = start_index * FPS / 1000
         copy_clip = clip.copy()
+        #start_clip = clip.subclipsubclip(t_start=t_start)
         start_clip = clip.subclip(t_start=t_start)
         loop_clip = concatenate_videoclips([start_clip] + [copy_clip] * (int(duration / seconds)))
+
     clip = loop_clip.set_start(start_seconds).set_end(end_seconds)
     if flip == 1:
         clip = clip.fx(mirror_x)
@@ -84,6 +89,7 @@ class VideoReader:
             flip: int = 0,
             start_at: int = 0,
             end_at: int = 0,
+            volume:int=100,
             layer: int = 1,
             mask_file_path: Optional[str] = None,
             start_index: int = 0,
@@ -113,6 +119,7 @@ class VideoReader:
             flip=flip,
             start_at=start_at,
             end_at=end_at,
+            volume=volume,
             start_index=0,
             is_mask=False,
         )
@@ -126,6 +133,7 @@ class VideoReader:
                 flip=flip,
                 start_at=start_at,
                 end_at=end_at,
+                volume=volume,
                 start_index=start_index,
                 is_mask=True,
             )

@@ -175,6 +175,7 @@ def create_reader(
             flip=flip,
             start_at=start_at,
             end_at=end_at,
+            volume=volume,
             layer=layer,
             mask_file_path=mask_path,
             start_index=start_index,
@@ -372,6 +373,7 @@ def _infer_multiple_video(task_id: str, infer_request: InferRequest) -> None:
                 flip=model.flip,
                 start_at=model.startAt,
                 end_at=model.endAt,
+                volume=speaker.volume,
                 layer=model.layer,
                 logger=task_logger,
                 start_index=model.startFrameIndex,
@@ -399,6 +401,7 @@ def _infer_multiple_video(task_id: str, infer_request: InferRequest) -> None:
             end_at = getattr(node, 'endAt', 0)
             start_offset = getattr(node, 'startOffset', 0)
             end_offset = getattr(node, 'endOffset', 0)
+            volume=getattr(node,'volume',0)
             layer = getattr(node, 'layer', 0)
             text = getattr(node, 'text', None)
             align = getattr(node, 'align', 'center')
@@ -431,6 +434,7 @@ def _infer_multiple_video(task_id: str, infer_request: InferRequest) -> None:
                 end_at=end_at,
                 start_offset=start_offset,
                 end_offset=end_offset,
+                volume=volume,
                 layer=layer,
                 logger=task_logger,
                 text=text,
@@ -441,6 +445,7 @@ def _infer_multiple_video(task_id: str, infer_request: InferRequest) -> None:
                 stroke_width=stroke_width,
                 letter_spacing=letter_spacing,
             )
+
             readers.append(reader)
 
         task_logger.info('step3. 合成视频')

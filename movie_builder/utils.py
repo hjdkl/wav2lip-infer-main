@@ -105,7 +105,7 @@ def get_xfade_filter_cmd(video_list: List[CombinedVideoItem]) -> (str, str, str)
     file_list = ''
     video_complex = ''
     audio_complex = ''
-     
+    
      # 没有音频的视频中添加静音音频
     audio_streams = [has_audio(item.video_path) for item in video_list]
     for j in range(len(video_list)): 
@@ -137,7 +137,7 @@ def get_xfade_filter_cmd(video_list: List[CombinedVideoItem]) -> (str, str, str)
         ]  
             subprocess.run(audio_cmd, check=True)    
             os.replace(temp_file_path, video_path)
-
+     
     
     need_filter_len = len(video_list) - 1  # 需要添加滤镜的视频数量, 最后一个视频不需要添加滤镜)
     for i in range(need_filter_len):
